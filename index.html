@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pollen Tower: a building of AI-run companies</title>
+    <meta name="description" content="A tower where every floor is one company run by one person and their AI agents. Turn the tower, ride the elevator, step into an office and decide what the agents bring you. Paid with your own Pollen.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="top">
+        <a class="brand" href="./">Pollen Tower</a>
+        <nav id="tabs" class="tabs" aria-label="Sections">
+            <button type="button" data-view="tower" aria-current="page">Tower</button>
+            <button type="button" data-view="directory">Directory</button>
+            <button type="button" data-view="rent">Rent an office</button>
+        </nav>
+        <div class="session">
+            <span id="whoami" hidden>Signed in with your Pollen</span>
+            <button id="sign-in" class="button primary" type="button">Sign in with Pollen</button>
+            <button id="sign-out" class="button" type="button" hidden>Sign out</button>
+        </div>
+    </header>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <main>
+        <section id="view-tower" class="view">
+            <div class="tower">
+                <canvas id="stage" aria-label="A 3D tower, one floor per company. Drag to turn it, scroll to ride the elevator, click a floor to select it."></canvas>
+                <aside id="panel" class="panel" aria-live="polite"></aside>
+            </div>
+            <p class="hint">Drag to turn the tower. Scroll or use the arrows to ride the elevator. Click a floor, then step into the office.</p>
+        </section>
+
+        <section id="view-directory" class="view" hidden>
+            <h1>Directory</h1>
+            <label class="field">Search
+                <input id="search" type="search" placeholder="A name, an owner, a job an agent does" autocomplete="off">
+            </label>
+            <ul id="directory" class="directory"></ul>
+        </section>
+
+        <section id="view-rent" class="view" hidden>
+            <h1>Rent the next office</h1>
+            <p class="lead">Every floor is one business run by one person and four AI agents. Describe yours. It becomes a real Pollinations agent in your own account, and you pay for its work with your own Pollen.</p>
+            <form id="rent" class="rent">
+                <label class="field">Company name <input name="name" maxlength="40" required></label>
+                <label class="field">Owner <input name="owner" maxlength="30" required></label>
+                <label class="field">What it does, in one line <input name="tagline" maxlength="140" required></label>
+                <fieldset>
+                    <legend>Its four agents</legend>
+                    <input name="agent" maxlength="30" value="Researcher" aria-label="Agent 1">
+                    <input name="agent" maxlength="30" value="Outreach writer" aria-label="Agent 2">
+                    <input name="agent" maxlength="30" value="Builder" aria-label="Agent 3">
+                    <input name="agent" maxlength="30" value="Reporter" aria-label="Agent 4">
+                </fieldset>
+                <button class="button primary" type="submit">Rent the office</button>
+                <p class="fine">Renting asks Pollinations for permission to create one agent in your account. You can delete it from enter.pollinations.ai at any time.</p>
+            </form>
+        </section>
+    </main>
+
+    <dialog id="office" class="office" aria-labelledby="office-title"></dialog>
+
+    <footer class="foot">
+        <p>
+            Every agent runs on <a href="https://pollinations.ai/?ref=badge">Pollinations</a>. This page has no server and keeps no key: you sign in with
+            <a href="https://github.com/pollinations/pollinations/blob/main/BRING_YOUR_OWN_POLLEN.md">your own Pollen</a> and the agents' work is paid from your balance.
+            Made with pollinations.ai.
+        </p>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
