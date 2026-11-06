@@ -190,20 +190,21 @@ function openOffice(company) {
         if (!getSession()) return startSignIn();
         state.working.add(company.id);
         paint();
+        // The notice bar sits behind the open office, so a failure is also shown inside it.
+        let failure = null;
         try {
             const jobs = parseJobs(await runCompany(company));
             state.runs[company.id] = { jobs, choices: {}, at: Date.now() };
             save(RUNS, state.runs);
             notice(null);
         } catch (error) {
-            notice(
-                error instanceof PollenError || error instanceof Error ? error.message : "Something went wrong.",
-                "error",
-            );
+            failure = error.message || "Something went wrong.";
+            notice(failure, "error");
             if (error.status === 401) renderSession();
         } finally {
             state.working.delete(company.id);
             paint();
+            if (failure) result.append(Object.assign(document.createElement("p"), { className: "notice error", textContent: failure }));
         }
     };
     paint();
