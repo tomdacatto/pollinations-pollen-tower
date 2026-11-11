@@ -29,7 +29,7 @@ function facade(company) {
     g.font = "bold 30px system-ui, sans-serif";
     g.textAlign = "center";
     g.textBaseline = "middle";
-    g.fillText(company.name, canvas.width / 2, 65, canvas.width - 24);
+    g.fillText(company.pending ? `${company.name} (pending)` : company.name, canvas.width / 2, 65, canvas.width - 24);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
     return texture;

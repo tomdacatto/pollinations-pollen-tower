@@ -68,6 +68,7 @@ test("an application becomes the next floor, with a unique id", () => {
     const company = application(form, []);
     assert.equal(company.id, "clay-co");
     assert.equal(company.mine, true);
+    assert.equal(company.pending, true, "an application waits for its agent");
     assert.equal(application(form, ["clay-co"]).id, "clay-co-2");
     assert.equal(application(form, ["clay-co", "clay-co-2"]).id, "clay-co-3");
 });

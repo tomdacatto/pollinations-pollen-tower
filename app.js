@@ -1,20 +1,11 @@
 import { COMPANIES } from "./companies.js";
-import {
-    clearSession,
-    completeSignIn,
-    createAgent,
-    getSession,
-    PollenError,
-    runCompany,
-    startSignIn,
-} from "./pollen.js";
+import { clearSession, completeSignIn, getSession, PollenError, runCompany, startSignIn } from "./pollen.js";
 import { createTower } from "./scene.js";
-import { application, choose, decided, parseJobs, search } from "./tower.js";
+import { agentRequest, application, choose, decided, parseJobs, search } from "./tower.js";
 
 const $ = (selector) => document.querySelector(selector);
 const RENTED = "tower.rented";
 const RUNS = "tower.runs";
-const DRAFT = "tower.draft";
 
 const load = (key, fallback) => {
     try {
@@ -168,6 +159,26 @@ function openOffice(company) {
         ...company.agents.map((agent) => Object.assign(document.createElement("li"), { textContent: agent })),
     );
 
+    if (company.pending) {
+        // An application has no agent yet, so there is nothing to run: show what it asks for.
+        const note = Object.assign(document.createElement("p"), {
+            className: "fine",
+            textContent:
+                "This application is saved in your browser and waits for its agent. Once the agent exists, this floor can run the day.",
+        });
+        const file = document.createElement("details");
+        const area = Object.assign(document.createElement("textarea"), {
+            readOnly: true,
+            rows: 10,
+            value: JSON.stringify(agentRequest(company), null, 2),
+        });
+        file.append(Object.assign(document.createElement("summary"), { textContent: "The agent it asks for" }), area);
+        inner.append(head, roster, note, file);
+        dialog.append(inner);
+        dialog.showModal();
+        return;
+    }
+
     const run = Object.assign(document.createElement("button"), { className: "button primary", type: "button" });
     const result = document.createElement("div");
     inner.append(head, roster, run, result);
@@ -204,7 +215,10 @@ function openOffice(company) {
         } finally {
             state.working.delete(company.id);
             paint();
-            if (failure) result.append(Object.assign(document.createElement("p"), { className: "notice error", textContent: failure }));
+            if (failure)
+                result.append(
+                    Object.assign(document.createElement("p"), { className: "notice error", textContent: failure }),
+                );
         }
     };
     paint();
@@ -269,8 +283,8 @@ function renderRun(container, company, repaint) {
     );
 }
 
-// Renting the next office.
-async function rent(event) {
+// Applying for the next office: the application is saved here and shows on the tower as pending.
+function rent(event) {
     event.preventDefault();
     const form = event.currentTarget;
     const data = {
@@ -288,45 +302,13 @@ async function rent(event) {
     } catch (error) {
         return notice(error.message, "error");
     }
-    if (!getSession()?.keys) {
-        sessionStorage.setItem(DRAFT, JSON.stringify(data));
-        return startSignIn({ keys: true });
-    }
-    const button = form.querySelector("button[type=submit]");
-    button.disabled = true;
-    try {
-        company.model = await createAgent(company);
-        state.rented.push(company);
-        save(RENTED, state.rented);
-        sessionStorage.removeItem(DRAFT);
-        form.reset();
-        state.tower?.setFloors(companies(), companies().length - 1);
-        show("tower");
-        ride(companies().length - 1);
-        notice(
-            `${company.name} has the top floor. Its agent can take a minute or two to start; then step in and run the day.`,
-        );
-    } catch (error) {
-        notice(error.message, "error");
-    } finally {
-        button.disabled = false;
-    }
-}
-
-function resumeDraft() {
-    try {
-        const draft = JSON.parse(sessionStorage.getItem(DRAFT) || "null");
-        if (!draft) return;
-        const form = $("#rent");
-        form.elements.name.value = draft.name;
-        form.elements.owner.value = draft.owner;
-        form.elements.tagline.value = draft.tagline;
-        form.querySelectorAll("[name=agent]").forEach((input, i) => {
-            input.value = draft.agents[i] ?? "";
-        });
-        show("rent");
-        notice("Signed in. Press Rent the office to finish.");
-    } catch {}
+    state.rented.push(company);
+    save(RENTED, state.rented);
+    form.reset();
+    state.tower?.setFloors(companies(), companies().length - 1);
+    show("tower");
+    ride(companies().length - 1);
+    notice(`${company.name} has applied for the top floor. The application is pending until its agent exists.`);
 }
 
 // Start.
@@ -367,4 +349,3 @@ try {
     notice("This browser cannot draw the 3D tower. The directory and the offices still work.", "error");
 }
 renderPanel();
-if (outcome === "ok") resumeDraft();

@@ -13,7 +13,7 @@
         <nav id="tabs" class="tabs" aria-label="Sections">
             <button type="button" data-view="tower" aria-current="page">Tower</button>
             <button type="button" data-view="directory">Directory</button>
-            <button type="button" data-view="rent">Rent an office</button>
+            <button type="button" data-view="rent">Apply for an office</button>
         </nav>
         <div class="session">
             <span id="whoami" hidden>Signed in with your Pollen</span>
@@ -42,8 +42,8 @@
         </section>
 
         <section id="view-rent" class="view" hidden>
-            <h1>Rent the next office</h1>
-            <p class="lead">Every floor is one business run by one person and four AI agents. Describe yours. It becomes a real Pollinations agent in your own account, and you pay for its work with your own Pollen.</p>
+            <h1>Apply for the next office</h1>
+            <p class="lead">Every floor is one business run by one person and four AI agents. Describe yours and apply. The application is saved in your browser and shows on the tower as pending until its agent exists.</p>
             <form id="rent" class="rent">
                 <label class="field">Company name <input name="name" maxlength="40" required></label>
                 <label class="field">Owner <input name="owner" maxlength="30" required></label>
@@ -55,8 +55,8 @@
                     <input name="agent" maxlength="30" value="Builder" aria-label="Agent 3">
                     <input name="agent" maxlength="30" value="Reporter" aria-label="Agent 4">
                 </fieldset>
-                <button class="button primary" type="submit">Rent the office</button>
-                <p class="fine">Renting asks Pollinations for permission to create one agent in your account. You can delete it from enter.pollinations.ai at any time.</p>
+                <button class="button primary" type="submit">Apply for the office</button>
+                <p class="fine">Nothing is sent anywhere and no sign-in is needed to apply. Open a pending floor to see the agent it asks for.</p>
             </form>
         </section>
     </main>

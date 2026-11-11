@@ -13,7 +13,7 @@ Pollinations quest [#17999](https://github.com/pollinations/pollinations/issues/
 - **Turn the tower** by dragging, **ride the elevator** with the scroll wheel or the arrows, and click any floor to select it.
 - **Step into an office** and press "Run today". The company's agents do the day's work and bring back finished jobs. Jobs that need a person come with a question and two options, and the choice is yours. Your picks are kept in the browser.
 - **Browse the directory** and search it by company, owner, sector or the work an agent does.
-- **Rent the next office.** Describe a company and name its four agents. It becomes a real private agent in your own Pollinations account, and a new floor appears on top of the tower.
+- **Apply for the next office.** Describe a company and name its four agents. The application is saved in your browser and a new floor appears on top of the tower, marked pending. Open it to see the agent it asks for. No sign-in is needed, and nothing is created until the agent exists.
 
 ![An office: three jobs from the team, two decisions made](docs/office.png)
 ![The directory, searched for "invoice"](docs/directory.png)
@@ -22,11 +22,11 @@ Pollinations quest [#17999](https://github.com/pollinations/pollinations/issues/
 
 Each company is one Pollinations prompt agent ([`/account/agents`](https://github.com/pollinations/pollinations/blob/main/APIDOCS.md#accountagents)): its instructions say who the owner is, who its four agents are and to reply with JSON only. "Run today" is one chat call to the company's model, for example `community/tomdacatto/tower-tidewatch`, made with the visitor's key. `tower.js` reads the reply: a job with no result is dropped, a decision with fewer than two options is dropped, and a reply that is not JSON is an error, not an empty office.
 
-The eight demo companies are public agents, so any signed-in visitor can run them. `tools/publish-agents.mjs` creates or updates them from `companies.js`. A company you rent is created with your own key as a private agent called `tower-<name>`, so you can see it and delete it from enter.pollinations.ai.
+The eight demo companies are public agents, so any signed-in visitor can run them. `tools/publish-agents.mjs` creates or updates them from `companies.js`. An application only stores the agent it asks for (`agentRequest` in `tower.js`); the website cannot create agents for a visitor, because Pollinations offers the `keys` permission only on the device flow and on localhost redirects.
 
 ## How it pays
 
-There is no server and no key in this repository. The visitor signs in on enter.pollinations.ai ([Bring Your Own Pollen](https://github.com/pollinations/pollinations/blob/main/BRING_YOUR_OWN_POLLEN.md), fragment flow); the key comes back in the URL fragment, is removed from the address bar and is kept in `sessionStorage` for that tab only. The sign-in asks for a 0.2 Pollen budget and one day. Renting an office asks for the extra `keys` permission, only when you rent. The agents' model and tool calls consume the caller's Pollen; managed agents are free at the outer layer.
+There is no server and no key in this repository. The visitor signs in on enter.pollinations.ai ([Bring Your Own Pollen](https://github.com/pollinations/pollinations/blob/main/BRING_YOUR_OWN_POLLEN.md), fragment flow); the key comes back in the URL fragment, is removed from the address bar and is kept in `sessionStorage` for that tab only. The sign-in asks for a 0.2 Pollen budget and one day. With an App Key set in `config.js` the sign-in sends it as `client_id`, so the consent screen names the app and usage is attributed. Calling a public agent bills only the model's tokens, to the caller's Pollen.
 
 Real cost: a run of the day is one call to `openai/gpt-5.4-nano` of roughly 190 prompt and 400 completion tokens, about 0.0005 Pollen.
 
@@ -37,15 +37,14 @@ On the live code with a real key, all eight agents returned parseable jobs (3 ea
 ## Not verified
 
 - A visitor other than the agents' owner running the public agents. The calls were made with the owner's key.
-- The sign-in redirect and the `keys` permission on this page's address: the flow is the one used in an earlier app of mine, and in this run the key was loaded into the page from a stored test key.
-- Renting an office against the live API: the page's behaviour was checked with a stand-in for `POST /account/agents`, and the request body is the same one the publish script sends.
+- The sign-in redirect on this page's address: in the real run the key was loaded into the page from a stored test key.
 - Phones and browsers other than desktop Chrome.
 
 ## Files
 
 - `companies.js`: the floors (one owner, four agents each), and the instructions that turn a company into an agent
-- `tower.js`: reading a report, decisions, search and the rent application (no network, no DOM)
-- `pollen.js`: sign-in, the run call and creating a renter's agent
+- `tower.js`: reading a report, decisions, search and the application for an office (no network, no DOM)
+- `pollen.js`: sign-in and the run call
 - `scene.js`: the 3D tower (three.js, loaded from a CDN, pinned to 0.160.0)
 - `app.js`, `index.html`, `style.css`: the page
 - `tools/publish-agents.mjs`, `tools/try-agent.mjs`: create the agents, and run one for a check

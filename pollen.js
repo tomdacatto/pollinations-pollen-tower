@@ -3,8 +3,8 @@
 // sends to a server, and is kept in sessionStorage for this tab only.
 // Flow reference: https://github.com/pollinations/pollinations/blob/main/BRING_YOUR_OWN_POLLEN.md
 import { agentModel } from "./companies.js";
-import { BUDGET, EXPIRY_DAYS } from "./config.js";
-import { agentRequest, RUN_MESSAGE } from "./tower.js";
+import { APP_KEY, BUDGET, EXPIRY_DAYS } from "./config.js";
+import { RUN_MESSAGE } from "./tower.js";
 
 const ENTER = "https://enter.pollinations.ai";
 const GEN = "https://gen.pollinations.ai";
@@ -24,15 +24,14 @@ export function appUrl(href = location.href) {
     return new URL("./", href).href;
 }
 
-// `keys` also asks to create agents in the visitor's account, which renting an office needs.
-export function buildAuthorizeUrl({ redirectUri, state, keys = false }) {
+export function buildAuthorizeUrl({ redirectUri, state, appKey = APP_KEY }) {
     const params = new URLSearchParams({
         redirect_uri: redirectUri,
         state,
         budget: String(BUDGET),
         expiry: String(EXPIRY_DAYS),
     });
-    if (keys) params.set("permissions", "keys");
+    if (appKey) params.set("client_id", appKey);
     return `${ENTER}/authorize?${params}`;
 }
 
@@ -65,10 +64,10 @@ export function clearSession() {
 const randomState = () =>
     Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
 
-export function startSignIn({ keys = false } = {}) {
+export function startSignIn() {
     const state = randomState();
-    sessionStorage.setItem(PENDING, JSON.stringify({ state, keys }));
-    location.assign(buildAuthorizeUrl({ redirectUri: appUrl(), state, keys }));
+    sessionStorage.setItem(PENDING, JSON.stringify({ state }));
+    location.assign(buildAuthorizeUrl({ redirectUri: appUrl(), state }));
 }
 
 // Call once on page load. Returns "ok", "denied", "bad-state", "bad-key", "no-storage",
@@ -89,11 +88,7 @@ export function completeSignIn(hash = location.hash) {
     try {
         sessionStorage.setItem(
             SESSION,
-            JSON.stringify({
-                key: result.key,
-                keys: Boolean(pending.keys),
-                expiresAt: Date.now() + EXPIRY_DAYS * DAY_MS,
-            }),
+            JSON.stringify({ key: result.key, expiresAt: Date.now() + EXPIRY_DAYS * DAY_MS }),
         );
     } catch {
         return "no-storage";
@@ -134,12 +129,4 @@ export async function runCompany(company, options) {
         options,
     );
     return body.choices?.[0]?.message?.content ?? "";
-}
-
-/** Creates the company's agent in the visitor's own account; resolves to its model name. */
-export async function createAgent(company) {
-    const session = getSession();
-    if (!session?.keys) throw new PollenError("Renting an office needs a sign-in that may create agents.", 403);
-    const agent = await call("/account/agents", agentRequest(company));
-    return agent.model;
 }

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { buildAuthorizeUrl, readReturn } from "./pollen.js";
 
-test("the sign-in link asks for a small budget and one day, and no client_id", () => {
+test("the sign-in link asks for a small budget and one day, and names no app until there is an App Key", () => {
     const url = new URL(buildAuthorizeUrl({ redirectUri: "https://owner.github.io/tower/", state: "s1" }));
     assert.equal(url.origin + url.pathname, "https://enter.pollinations.ai/authorize");
     assert.equal(url.searchParams.get("redirect_uri"), "https://owner.github.io/tower/");
@@ -12,9 +12,11 @@ test("the sign-in link asks for a small budget and one day, and no client_id", (
     assert.equal(url.searchParams.has("permissions"), false);
 });
 
-test("renting an office also asks to create agents in the visitor's account", () => {
-    const url = new URL(buildAuthorizeUrl({ redirectUri: "https://x/", state: "s", keys: true }));
-    assert.equal(url.searchParams.get("permissions"), "keys");
+test("with an App Key the sign-in sends it as client_id and asks for no extra permission", () => {
+    const url = new URL(buildAuthorizeUrl({ redirectUri: "https://x/", state: "s", appKey: "pk_example1234" }));
+    assert.equal(url.searchParams.get("client_id"), "pk_example1234");
+    assert.equal(url.searchParams.has("permissions"), false);
+    assert.equal(url.searchParams.has("scope"), false);
 });
 
 test("reads the key from the fragment only when the state matches", () => {

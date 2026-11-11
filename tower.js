@@ -83,10 +83,10 @@ export function application(form, taken) {
     if (agents.length !== 4 || agents.some((agent) => !agent)) throw new Error("Name all four agents.");
     let id = slug(name);
     for (let n = 2; taken.includes(id); n++) id = `${slug(name)}-${n}`;
-    return { id, name, sector: "New", owner, tagline, agents, mine: true };
+    return { id, name, sector: "Pending", owner, tagline, agents, mine: true, pending: true };
 }
 
-/** The body that creates this company's agent in the renter's own account. */
+/** The agent an application asks for: the body that would create it, shown with the application. */
 export function agentRequest(company) {
     return {
         name: `tower-${company.id}`,
